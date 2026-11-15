@@ -67,7 +67,7 @@ TEAM_MODE = True
 TEAM_SIZE = 4
 TEAM_READY_DELAY = 5.0
 TEAM_INVITE_WAIT = 2.5
-CLAN_ID_DEFAULT = "3105712089"
+CLAN_ID_DEFAULT = "3107196176"
 DEV_UID = ""
 
 # ==================== CS MODE (CLASH SQUAD) ====================
@@ -1351,7 +1351,7 @@ def get_app_version():
     try: return play_scraper('com.dts.freefireth').get('version')
     except Exception: return FORCED_CLIENT_VERSION
 
-async def version_config(region="IND"):
+async def version_config(region="ID"):
     app_version = get_app_version()
     lang = REGION_LANG.get(str(region).upper(), "en")
     url = ("https://version.ggwhitehawk.com/live/ver.php"
@@ -1466,66 +1466,57 @@ async def grant_token(uid, password, gop_url, app_version, max_attempts=5):
 async def get_payload(access_token, open_id, platform, version, lang_code="en"):
     device_id = f"Google|{uuid.uuid4()}"
     major_login = {
-        "3": str(datetime.now())[:-7], "4": "free fire", "5": 1,
-        "7": "1.134.14",
-        "8": "Android OS 14 / API-34 (UP1A.231005.007/E156BXXS6AYD4)",
-        "9": "Handheld", "10": "airtel", "11": "CarrierDataNetwork",
-        "12": 2340, "13": 1080, "14": "295",
-        "15": "ARM64 FP ASIMD AES | 2200 | 8", "16": 5586,
-        "17": "Mali-G57 MC2", "18": "OpenGL ES 3.2 v1.r38p1",
-        "19": device_id, "20": "27.61.46.111", "21": lang_code,
+        "3": str(datetime.now())[:-7], "4": "free fire", "5": 1, "7": f"{version}",
+        "8": "Android OS 14 / API-34 (UP1A.231005.007/E135FXXSEEZE2)",
+        "9": "Handheld", "11": "CarrierDataNetwork", "12": 1672, "13": 750, "14": "338",
+        "15": "ARMv7 VFPv3 NEON | 2002 | 8", "16": 3702, "17": "Mali-G52",
+        "18": "OpenGL ES 3.2 v1.r38p1-01bet0-mbs2v41_0.6d20ec041e51b2f2d25dfc265586ebe8",
+        "19": device_id, "20": "104.28.197.151", "21": lang_code,
         "22": f"{open_id}", "23": f"{platform}", "24": "Handheld",
-        "25": "samsung SM-A146B", "26": "IND", "29": f"{access_token}",
-        "30": 1, "41": "airtel", "42": "4G",
-        "57": "7428b253defc164018c604a1ebbfebdf",
-        "60": 108009, "61": 3859, "62": 5023, "64": 3987,
-        "65": 108009, "66": 3987, "67": 108009,
-        "70": 4, "73": 3,
-        "74": "/data/app/~~OlJmIW-Yzl-44x2WnJP4Nw==/com.garena.game.ffi-_eDk_pQQMiFk1YUeqwJBvQ==/lib/arm64",
-        "76": 3,
-        "77": "dd9d4c174e0472d34b7fd34bd5924bc9|/data/app/~~OlJmIW-Yzl-44x2WnJP4Nw==/com.garena.game.ffi-_eDk_pQQMiFk1YUeqwJBvQ==/base.apk",
-        "78": 3, "79": 2, "81": "64", "83": "2019121269",
-        "85": 3, "86": "OpenGLES2", "87": 8191, "88": int(platform),
-        "92": 9570, "93": "android",
-        "94": "KqsHT54jON6bxITmlrRyOrXWBqKqZ4BoqPzT/mhtriAfRt2dt7gC8pnAJfj11alcEUA5sD8BshSYQhxXT9RFmU6YzcI1FKK4MwxJcF4+kvelPD1H",
-        "95": 111207,
-        "96": "{\"cur_rate\":null,\"support_etc2\":false}",
-        "97": 1, "99": "4", "100": "4", "102": {},
-        "104": 11921, "105": 1,
-        "106": "https://dl-tata.freefireind.in/live/ABHotUpdates/|https://core-tata.freefireind.in/live/ABHotUpdates/|dff941d41e6e3a9e76f05ed71fdc8d87",
-        "107": "1.6168622e0868ddbd",
+        "25": "samsung SM-E135F", "26": "ID", "29": f"{access_token}", "30": 1,
+        "42": "Cellular", "57": "7428b253defc164018c604a1ebbfebdf",
+        "60": 52037, "61": 5355, "62": 3723, "63": 3, "64": 5483, "65": 52037,
+        "66": 5483, "67": 52037, "73": 2,
+        "74": "/data/app/~~yACsV8QOk9OexgajWQP30A==/com.dts.freefireth-Bi_wPVrrhYM2nYncc29q7Q==/lib/arm",
+        "76": 1,
+        "77": "b8e0cd5e295eee42f5860d3c86e483dd|/data/app/~~yACsV8QOk9OexgajWQP30A==/com.dts.freefireth-Bi_wPVrrhYM2nYncc29q7Q==/base.apk",
+        "78": 3, "79": 1, "81": "32", "83": "2019121229", "86": "OpenGLES2",
+        "87": 8191, "88": int(platform), "92": 16091, "93": "android",
+        "94": "KqsHT3Yeqo3RLRl8efNiL3aL/1SHwlSrtK0DwNAqdkNBQz70TeVy+icaIwuR3UK4b65Uf3IG5xBFEv0uu+jQZI+rOYCmNCsXjJT4QcZaYgoaaUGG",
+        "95": 111107, "96": "{\"cur_rate\":null,\"support_etc2\":false}",
+        "97": 1, "98": 1, "99": f"{platform}", "100": f"{platform}",
+        "102": "4503454457550c0766", "104": 53792, "105": 1,
+        "106": "https://dl-bs.ggpolarbear.com/live/ABHotUpdates/|https://core-bs.ggpolarbear.com/live/ABHotUpdates/|6b2078db9d22dd98f8e9386a39af8462",
+        "107": "c8e41b7a93f02d56e1a94c7b8203f5d1",
     }
-    send_getlogin = dict(major_login)
-    send_getlogin["90"] = "Coimbatore"
-    send_getlogin["91"] = "TN"
-    send_getlogin["99"] = "4"
-    send_getlogin["103"] = 1
-    p1 = create_proto(major_login).hex()
-    p2 = create_proto(send_getlogin).hex()
-    return bytes.fromhex(encrypt_aes(p1)), bytes.fromhex(encrypt_aes(p2))
-
+    get_login_data = dict(major_login)
+    get_login_data["90"] = "Khulna"
+    get_login_data["91"] = "D"
+    get_login_data["99"] = "0"
+    get_login_data["103"] = 1
+    proto1 = create_proto(major_login).hex()
+    proto2 = create_proto(get_login_data).hex()
+    return bytes.fromhex(encrypt_aes(proto1)), bytes.fromhex(encrypt_aes(proto2))
 
 async def major_login(payload, login_url, release_version):
     url = f"{login_url.rstrip('/')}/MajorLogin"
-    hdrs = {
-        "Accept": "*/*", "Authorization": "Bearer ",
+    req_headers = {"Accept": "*/*", "Authorization": "Bearer ",
         "Content-Type": "application/x-www-form-urlencoded",
-        "ReleaseVersion": f"{release_version}",
-        "User-Agent": "UnityPlayer/2018.4.12f1 (UnityWebRequest/1.0, libcurl/8.5.0-DEV)",
-        "X-GA": "v1 1", "X-GA-SV": str(int(time.time())),
-        "X-Unity-Version": "2018.4.12f1",
-    }
+        "ReleaseVersion": f"{release_version}", "User-Agent": "UnityPlayer/2018.4.12f1",
+        "X-GA": "v1 1", "X-GA-SV": str(int(time.time())), "X-Unity-Version": "2018.4.12f1"}
     try:
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False; ctx.verify_mode = ssl.CERT_NONE
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
-            async with s.post(url, headers=hdrs, data=payload, ssl=ctx) as resp:
-                content = await resp.read()
-                if resp.status != 200 or len(content) < 200: return None
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False; ssl_context.verify_mode = ssl.CERT_NONE
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as session:
+            async with session.post(url, headers=req_headers, data=payload, ssl=ssl_context) as response:
+                response_content = await response.read()
+                print_info(f"MAJOR-LOGIN status={response.status} len={len(response_content)}")
+                if response.status != 200 or len(response_content) < 200: return None
                 best = None; best_score = -1; best_off = 0
-                for off in [64, 0, 48, 32, 80, 16, 128, 8, 96, 60, 56, 40, 24, 20, 12, 4]:
-                    if off >= len(content): continue
-                    cb = content[off:]; cand = None
+                for offset in [64, 0, 48, 32, 80, 16, 128, 8, 96, 60, 56, 40, 24, 20, 12, 4]:
+                    if offset >= len(response_content): continue
+                    cb = response_content[offset:]
+                    cand = None
                     try: cand = decode_protobuf_dict(cb)
                     except Exception: cand = None
                     if not cand:
@@ -1538,49 +1529,41 @@ async def major_login(payload, login_url, release_version):
                     has_jwt = ("8" in keys) or (8 in keys)
                     has_url = ("10" in keys) or (10 in keys)
                     score = len(cand) + (100 if has_jwt else 0) + (50 if has_url else 0)
-                    if score > best_score: best = cand; best_score = score; best_off = off
+                    if score > best_score:
+                        best = cand; best_score = score; best_off = offset
                     if has_jwt and has_url: break
-                if not best or ("8" not in best and 8 not in best): return None
-                best["__RAW_HEX__"] = content.hex(); best["__OFFSET__"] = best_off
+                if not best: return None
+                if ("8" not in best) and (8 not in best): return None
+                best["__RAW_HEX__"] = response_content.hex()
+                best["__OFFSET__"] = best_off
                 return best
     except Exception as e:
-        print_error(f"[MAJOR-LOGIN] {e}"); return None
-
+        print_error(f"MAJOR-LOGIN {e}"); return None
 
 async def get_login_data(payload, jwt_token, server_url, release_version):
     url = f"{server_url.rstrip('/')}/GetLoginData"
-    hdrs = {
-        "Accept": "*/*", "Authorization": f"Bearer {jwt_token}",
-        "Content-Type": "application/x-www-form-urlencoded",
-        "ReleaseVersion": f"{release_version}",
-        "User-Agent": "UnityPlayer/2018.4.12f1", "X-GA": "v1 1",
-        "X-GA-SV": str(int(time.time())), "X-Unity-Version": "2018.4.12f1",
-    }
+    hdrs = {"Accept":"*/*","Authorization":f"Bearer {jwt_token}",
+        "Content-Type":"application/x-www-form-urlencoded",
+        "ReleaseVersion":f"{release_version}", "User-Agent":"UnityPlayer/2018.4.12f1",
+        "X-GA":"v1 1","X-GA-SV":str(int(time.time())),"X-Unity-Version":"2018.4.12f1"}
     try:
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False; ctx.verify_mode = ssl.CERT_NONE
+        ssl_ctx = ssl.create_default_context()
+        ssl_ctx.check_hostname = False; ssl_ctx.verify_mode = ssl.CERT_NONE
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
-            async with s.post(url, headers=hdrs, data=payload, ssl=ctx) as r:
+            async with s.post(url, headers=hdrs, data=payload, ssl=ssl_ctx) as r:
                 if r.status != 200: return None
                 content = await r.read()
-                # prefer offsets containing fields 14 + 32
-                for off in [0, 64, 48, 32, 80, 16, 128, 8, 96, 112, 144, 160]:
-                    if off >= len(content): continue
-                    try:
-                        c = decode_protobuf_dict(content[off:])
-                        if c and (("14" in c and "32" in c) or (14 in c and 32 in c)):
-                            return c
-                    except Exception: pass
-                for off in [0, 64, 48, 32, 80, 16, 128, 8, 96]:
+                for off in [0,64,48,32,80,16,128,8,96]:
                     if off >= len(content): continue
                     try:
                         c = decode_protobuf_dict(content[off:])
                         if c and len(c) >= 3: return c
                     except Exception: pass
-                for off in [0, 64, 48, 32, 80]:
+                for off in [0,64,48,32,80]:
                     if off >= len(content): continue
                     c = decode_protobuf_2(content[off:])
-                    if c and len(c) >= 3: return {str(k): {"data": v} for k, v in c.items()}
+                    if c and len(c) >= 3:
+                        return {str(k):{"data":v} for k,v in c.items()}
         return None
     except Exception: return None
 
@@ -1670,21 +1653,21 @@ async def choose_region(region, jwt_token, login_url, release_version):
 # ════════════════════════════════════════════════════════════════════════
 
 # ==================== TCP ====================
-async def build_tcp_startup_packet(account_id, token, server_time, key, iv, region="IND", typ='OnLine'):
+async def build_tcp_startup_packet(account_id, token, server_time, key, iv, region="BD", typ='OnLine'):
     uid_hex = f"{int(account_id):016x}"
     ts_hex = f"{int(server_time):08x}"
     enc = (await aes_encrypt(token.encode(), key, iv)).hex()
     enc_len = f"{len(enc)//2:08x}"
-    reg = str(region).upper() if region else "IND"
+    reg = str(region).upper() if region else "BD"
     if typ == 'OnLine':
-        pfx = '7219' if reg == 'BD' else ('7214' if reg == 'IND' else '7215')
+        pfx = '7219' if reg == 'BD' else ('7214' if reg == 'BD' else '7215')
         return f"{pfx}{uid_hex}{ts_hex}00000000{enc_len}{enc}"
-    pfx = '8119' if reg == 'BD' else ('8114' if reg == 'IND' else '8115')
+    pfx = '8119' if reg == 'BD' else ('8114' if reg == 'BD' else '8115')
     return f"{pfx}{uid_hex}{ts_hex}{enc_len}{enc}"
 
-async def send_keep_alive(region="IND"):
-    reg = str(region).upper() if region else "IND"
-    return bytes.fromhex("0219" if reg == "ID" or reg == "BD" else ("0214" if reg == "IND" else "0215"))
+async def send_keep_alive(region="BD"):
+    reg = str(region).upper() if region else "BD"
+    return bytes.fromhex("0219" if reg == "ID" or reg == "BD" else ("0214" if reg == "BD" else "0215"))
 
 async def start_game_battle_royale(region, client_version, writer, key, iv):
     packet = bytes.fromhex("0314000001e0a8c1becfcdd1a311df1b23e218f8b6ae1df958f76dfeb6bfd0399d153d1f9687174c189de3900d11f3eb8fd92cd831c482b06adec14632935703a0423b76051274d67f1381e5794cc6256079d1514ad9f9fa864733257d8e5910e9ba2f048dbe5008ba23d7e4db609ceb46ab823a50a15d0692d44c73d1f6c8e9ee33462952f2685ef8b32faea409a9b61ea091f3a36a727773dbb8316c01dfa6512dbe5b3a3ce6c8310783386c9c70c8fe143f6bc39854fdd1fffd157e52ef006a9e1e944b252a0072154aa34a45b7a5f080d7043eaf0ec6dd884b62b906781cdecca9d49f50f521c4a57dcefc4e5c274f242dcad6489dae6795c2173803fb1d343f64d47699164508e95709a43f018efca4eab791ff4010aab17d1926f7d5e11983249879940d90d5f257ad66dc0e193716addb278510de0afa48825d24ec20724382d731a2f2258ace8a4e614bfb620dc90ee9c3a87e5deaed1d44efdb561e320bc9faab91aea632d060f4ffa268067ab588edd6342c086059accb30d036b3cf766858f54b434d446935912e0e9c21b7e22ace9f17852366bd2390988f82545239e54baafcfd7bcd75d8a69a327019f8b608d80a49cbb6a65b31eec3fcab74afee3da4a9d59e367edd3f32d8eb0b8b516bcfbc1e104bd8c8bda5b76f8e5190ec1898d004dc")
@@ -1701,7 +1684,7 @@ async def start_game_battle_royale(region, client_version, writer, key, iv):
     except Exception: p = packet
     raw_proto_hex = p.hex()
     reg = str(region).upper() if region else "BD"
-    pkt_prefix = '0319' if reg == 'BD' else ('0314' if reg == 'IND' else '0315')
+    pkt_prefix = '0319' if reg == 'BD' else ('0314' if reg == 'BD' else '0315')
     packet_bytes = bytes.fromhex(raw_proto_hex)
     encrypted_packet = (await aes_encrypt(packet_bytes, key, iv)).hex()
     packet_length = len(encrypted_packet) // 2
@@ -1750,7 +1733,7 @@ async def CS_Solo_Start_Matchmaking_Packet(key, iv, region="BD"):
         "8b01a201020815"
     )
     reg = str(region).upper() if region else "BD"
-    pkt_prefix = '0319' if reg == 'BD' else ('0314' if reg == 'IND' else '0315')
+    pkt_prefix = '0319' if reg == 'BD' else ('0314' if reg == 'BD' else '0315')
     packet_bytes = bytes.fromhex(raw_proto_hex)
     encrypted_packet = (await aes_encrypt(packet_bytes, key, iv)).hex()
     packet_length = len(encrypted_packet) // 2
@@ -3054,7 +3037,7 @@ async def functional_lone_wolf(addrs, starter_packet, account_region, client_ver
             if not m.done(): m.cancel()
 
 # ==================== INFORMATIONAL ====================
-async def informational(addrs, starter_packet, key, iv, region="IND",
+async def informational(addrs, starter_packet, key, iv, region="BD",
                         account_id="", max_reconnects=3, account_data=None):
     uid_str = str(account_id); reconnects = 0
     ip, port = addrs.split(":")
@@ -3162,7 +3145,7 @@ async def process_account_uid_pass(uid, password, region_override=None):
         acc_id = str(cached['account_id'])
         bot_state.register_account(uid=acc_id,
             nickname=cached.get('nickname', f"Player_{acc_id}"),
-            region=cached.get('region', 'IND'),
+            region=cached.get('region', 'BD'),
             level=cached.get('level', 1), exp=cached.get('exp', 0),
             likes=cached.get('likes', 0), auth_uid=uid)
         print_success(f"[CACHE] {acc_id} loaded")
@@ -3171,7 +3154,7 @@ async def process_account_uid_pass(uid, password, region_override=None):
     print_info(f"[LOGIN] UID {uid}...")
     try:
         async with _LOGIN_SEMAPHORE:
-            region = (region_override or "IND").upper()
+            region = (region_override or "BD").upper()
             vc = await version_config(region)
             if not vc: return None
             release_version, client_version, server_url, gop_1, app_version = vc
@@ -3233,7 +3216,7 @@ async def run_account_worker(ad, label, region_override=None, clan_override=None
     acc_id = str(ad['account_id'])
     info_task = None; exp_task = None
     try:
-        reg = (region_override or ad.get('region') or 'IND').upper()
+        reg = (region_override or ad.get('region') or 'BD').upper()
         tcp_online = await build_tcp_startup_packet(
             ad['account_id'], ad['token'], ad['server_time'],
             ad['aes_ak'], ad['iv_i'], region=reg, typ='OnLine')
@@ -3243,7 +3226,7 @@ async def run_account_worker(ad, label, region_override=None, clan_override=None
         if clan_override:
             try:
                 await asyncio.sleep(1.0)
-                await join_clan(ad.get('auth_uid') or ad.get('uid'), ad.get('auth_password'), clan_override)
+                await join_clan(ad['token'], clan_override)
             except Exception as e: print_warning(f"CLAN {e}")
         info_task = asyncio.create_task(informational(
             ad['informational_addrs'], tcp_chat, ad['aes_ak'], ad['iv_i'],
@@ -3298,7 +3281,7 @@ async def account_loop_guest(uid, password, region_override=None, clan_override=
             print_error(f"err {uid_str}: {e}"); await asyncio.sleep(10)
 
 # ==================== CREATE ACCOUNTS (lower flow) ====================
-async def create_four_accounts(region: str, clan_id: str, count: int = 4, password: str = "BRX771"):
+async def create_four_accounts(region: str, clan_id: str, count: int = 4, password: str = "FENI TXT"):
     bot_state.creating = True
     bot_state.create_progress = []
     def _prog(s):
@@ -3344,7 +3327,7 @@ async def create_four_accounts(region: str, clan_id: str, count: int = 4, passwo
 
                 major_payload, login_payload = await get_payload(
                     access_token, open_id, platform, game_version, lang)
-                nickname_final = "FENI•" + "".join(
+                nickname_final = "NGRAXX•" + "".join(
                     random.choices(string.ascii_uppercase + string.digits, k=5))
                 mr = await major_register(release_v, access_token, open_id,
                                           nickname_final, game_version, login_url, lang)
@@ -3479,8 +3462,8 @@ def _get_region_from_jwt(jwt_token):
 def _get_region_url(region):
     region = region.upper()
     if region == "IND": return "https://client.ind.freefiremobile.com"
-    if region in ["BR","US","NA"]: return "https://client.us.freefiremobile.com"
-    return "https://clientbp.ggpolarbear.com"
+    if region in ["BR","US","NA"]: return "https://clientbp.ggpolarbear.com/"
+    return "https://clientbp.ggpolarbear.com/"
 
 def _create_clan_payload(clan_id):
     if not _CLAN_PB_AVAILABLE: return None
@@ -3492,73 +3475,28 @@ def _create_clan_payload(clan_id):
     except Exception as e:
         print_error(f"CLAN payload: {e}"); return None
 
-async def join_clan(guest_uid, guest_password, clan_id):
-    """Join a guild through the configured guild-management API."""
-    uid = str(guest_uid or "").strip()
-    password = str(guest_password or "").strip()
-    gid = str(clan_id or "").strip()
-    if not (uid and password and gid.isdigit()):
-        print_warning("CLAN Join skipped: UID, password, or numeric guild ID missing")
-        return False
-
-    url = "https://danger-guild-management-web.vercel.app/join"
+async def join_clan(jwt_token, clan_id):
+    if not _CLAN_PB_AVAILABLE: return False
     try:
-        timeout = aiohttp.ClientTimeout(total=35)
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            async with session.get(
-                url,
-                params={"guild_id": gid, "uid": uid, "password": password},
-                headers={"Accept": "application/json", "User-Agent": "Mozilla/5.0"},
-            ) as response:
-                body = await response.text()
-                if response.status < 200 or response.status >= 300:
-                    print_warning(f"CLAN Join API HTTP {response.status}: {body[:500]}")
-                    return False
-                try:
-                    result = json.loads(body) if body.strip() else None
-                except (TypeError, ValueError):
-                    result = None
-
-                if isinstance(result, dict):
-                    flags = [result.get(k) for k in ("ok", "success", "joined") if k in result]
-                    if any(value is False for value in flags):
-                        print_warning(f"CLAN Join API rejected request: {str(result)[:500]}")
-                        return False
-                    if any(value is True for value in flags):
-                        print_success(f"CLAN joined guild {gid}")
-                        return True
-                    status_value = result.get("status")
-                    if isinstance(status_value, (bool, int)):
-                        if status_value is False or status_value == 0:
-                            print_warning(f"CLAN Join API status failure: {str(result)[:500]}")
-                            return False
-                        if status_value is True or status_value == 1:
-                            return True
-                    combined = " ".join(str(result.get(k, "")) for k in ("status", "message", "detail", "result")).lower()
-                    if any(word in combined for word in ("success", "joined", "already in", "already joined", "accepted")):
-                        print_success(f"CLAN joined guild {gid}")
-                        return True
-                    if any(word in combined for word in ("error", "failed", "invalid", "denied", "not allowed", "full")):
-                        print_warning(f"CLAN Join API rejected request: {str(result)[:500]}")
-                        return False
-                    # Some deployments return only a payload/message with HTTP 2xx.
-                    print_success(f"CLAN Join API accepted request for guild {gid}")
-                    return True
-
-                lowered = body.strip().lower()
-                if any(word in lowered for word in ("error", "failed", "invalid", "denied")):
-                    print_warning(f"CLAN Join API rejected request: {body[:500]}")
-                    return False
-                if response.status == 200 and lowered:
-                    print_success(f"CLAN Join API accepted request for guild {gid}")
-                    return True
-                return False
-    except asyncio.TimeoutError:
-        print_error("CLAN Join API timed out")
-        return False
+        region = _get_region_from_jwt(jwt_token)
+        base_url = _get_region_url(region)
+        url = base_url.rstrip("/") + "/RequestJoinClan"
+        host = base_url.replace("https://","")
+        payload = _create_clan_payload(clan_id)
+        if not payload: return False
+        hdrs = {"Authorization":f"Bearer {jwt_token}",
+            "X-Unity-Version":"2018.4.11f1","X-GA":"v1 1","ReleaseVersion":"OB55",
+            "Content-Type":"application/octet-stream","Host":host,
+            "Connection":"Keep-Alive","Accept-Encoding":"gzip"}
+        ssl_ctx = ssl.create_default_context()
+        ssl_ctx.check_hostname = False; ssl_ctx.verify_mode = ssl.CERT_NONE
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
+            async with s.post(url, headers=hdrs, data=payload, ssl=ssl_ctx) as r:
+                if r.status == 200:
+                    print_success(f"CLAN Join sent for {clan_id}"); return True
+                print_warning(f"CLAN Join status {r.status}"); return False
     except Exception as e:
-        print_error(f"CLAN Join API error: {type(e).__name__}: {e}")
-        return False
+        print_error(f"CLAN {e}"); return False
 
 # ==================== AUTOLOAD ====================
 async def _autoload_accounts():
@@ -3630,7 +3568,7 @@ async def _start_embedded_web_server():
             raise
 
     async def api_ping(request):
-        return aiohttp.web.json_response({"pong": True, "app": "FENI", "version": "2.0"})
+        return aiohttp.web.json_response({"pong": True, "app": "NGRAXX", "version": "2.0"})
 
     async def api_stats(request):
         accs = list(bot_state.accounts.values())
@@ -3644,10 +3582,10 @@ async def _start_embedded_web_server():
 
     async def api_create_team(request):
         body = await request.json()
-        region = str(body.get("region", "IND")).upper()
+        region = str(body.get("region", "BD")).upper()
         clan_id = str(body.get("clan_id", "")).strip()
         count = max(1, min(4, int(body.get("count", 4))))
-        password = str(body.get("password", "BRX771")).strip() or "BRX771"
+        password = str(body.get("password", "FENI TXT")).strip() or "FENI TXT"
         if bot_state.creating:
             return aiohttp.web.json_response({"ok": False, "error": "already creating"})
         asyncio.create_task(create_four_accounts(region, clan_id, count, password))
