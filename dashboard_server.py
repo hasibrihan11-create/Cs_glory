@@ -120,85 +120,74 @@ async def _default_fetch_guild_info(guild_id: str, region: str):
     return None
 
 async def _default_join_guild(guild_id, guest_uid, guest_password, region="IND", token=None):
+    """Call the guild-management API and interpret its common response formats."""
     gid = str(guild_id or "").strip()
     gu = str(guest_uid or "").strip()
     gp = str(guest_password or "").strip()
     if not (gid.isdigit() and gu and gp):
+        print("[DASH] join guild skipped: missing guild ID or guest credentials")
         return False
+
+    url = f"{GUILD_API_BASE}/join"
+    params = {"guild_id": gid, "uid": gu, "password": gp}
+    headers = {"accept": "application/json", "user-agent": "Mozilla/5.0"}
     try:
-        url = f"{GUILD_API_BASE}/join"
-        params = {"guild_id": gid, "uid": gu, "password": gp}
-        headers = {"accept": "application/json", "user-agent": "Mozilla/5.0"}
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
-            async with s.get(url, params=params, headers=headers) as r:
-                body = await r.text()
-                if r.status != 200:
-                    print(f"[DASH] join guild API HTTP {r.status}: {body[:200]}")
+        timeout = aiohttp.ClientTimeout(total=35)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.get(url, params=params, headers=headers) as response:
+                body = await response.text()
+                if response.status < 200 or response.status >= 300:
+                    print(f"[DASH] join API HTTP {response.status}: {body[:500]}")
                     return False
+
                 try:
-                    data = json.loads(body)
-                except Exception:
-                    data = None
-                if isinstance(data, dict):
-                    status = str(data.get("status", "")).lower()
-                    if data.get("ok") is True or any(
-                        word in status for word in ("success", "joined", "ok")
-                    ):
+                    result = json.loads(body) if body.strip() else None
+                except (TypeError, ValueError):
+                    result = None
+
+                if isinstance(result, dict):
+                    # APIs commonly use any of these fields for their result.
+                    flags = [result.get(k) for k in ("ok", "success", "joined") if k in result]
+                    if any(value is False for value in flags):
+                        print(f"[DASH] join API reported failure: {str(result)[:500]}")
+                        return False
+                    if any(value is True for value in flags):
                         return True
-                    print(f"[DASH] join guild API rejected request: {data}")
+
+                    status_value = result.get("status")
+                    if isinstance(status_value, (bool, int)):
+                        if status_value is False or status_value == 0:
+                            print(f"[DASH] join API status failure: {str(result)[:500]}")
+                            return False
+                        if status_value is True or status_value == 1:
+                            return True
+                    status = str(status_value or "").strip().lower()
+                    message = " ".join(str(result.get(k, "")) for k in ("message", "detail", "result")).lower()
+                    combined = f"{status} {message}"
+                    if any(word in combined for word in ("success", "joined", "already in", "already joined", "accepted")):
+                        return True
+                    if any(word in combined for word in ("error", "failed", "invalid", "denied", "not allowed", "full")):
+                        print(f"[DASH] join API rejected request: {str(result)[:500]}")
+                        return False
+                    # A 2xx response without an explicit failure is treated as accepted;
+                    # this supports APIs that return only a data/message payload.
+                    return True
+
+                if result is not None:
+                    print(f"[DASH] unexpected join API response: {str(result)[:500]}")
                     return False
-                if body.strip() and any(
-                    word in body.lower() for word in ("error", "failed", "invalid")
-                ):
-                    print(f"[DASH] join guild API rejected request: {body[:200]}")
+                lowered = body.strip().lower()
+                if any(word in lowered for word in ("error", "failed", "invalid", "denied")):
+                    print(f"[DASH] join API rejected request: {body[:500]}")
                     return False
-                return True
-    except Exception as e:
-        print(f"[DASH] join guild failed: {e}")
+                return bool(lowered)
+    except asyncio.TimeoutError:
+        print("[DASH] join API timed out")
+        return False
+    except Exception as exc:
+        print(f"[DASH] join API request error: {type(exc).__name__}: {exc}")
         return False
 
-# ==================== ACCOUNT SNAPSHOT ====================
-def _account_snapshot(auth_uid: str, fallback: dict = None) -> dict:
-    auth_uid = str(auth_uid)
-    acc = None
-    if BOT_STATE:
-        game_id = BOT_STATE.auth_to_game_id.get(auth_uid)
-        if game_id:
-            acc = BOT_STATE.accounts.get(str(game_id))
-    if acc:
-        return {
-            "uid": str(acc.get("uid", auth_uid)),
-            "auth_uid": auth_uid,
-            "nickname": acc.get("nickname", "Generating..."),
-            "level": int(acc.get("level", 1) or 1),
-            "gained_exp": int(acc.get("gained_exp", 0) or 0),
-            "status": acc.get("status", "ONLINE"),
-        }
-    if fallback:
-        return dict(fallback)
-    return {
-        "uid": auth_uid,
-        "auth_uid": auth_uid,
-        "nickname": "Generating...",
-        "level": 1,
-        "gained_exp": 0,
-        "status": "GENERATING",
-    }
-
-def _refresh_group_accounts(group: dict) -> None:
-    auth_uids = group.get("auth_uids", []) or []
-    initial_map = {a["auth_uid"]: a for a in group.get("initial_accounts", [])}
-    accounts = [
-        _account_snapshot(au, fallback=initial_map.get(str(au)))
-        for au in auth_uids
-    ]
-    group["accounts"] = accounts
-
-    if group.get("status") == "GENERATING" and accounts:
-        if any(a.get("status") != "GENERATING" for a in accounts):
-            group["status"] = "RUNNING"
-
-# ==================== DEFAULT GROUP CREATION ====================
 async def _default_run_group_creation(group_key: str, region: str, count: int, guild_id: str = None, password: str = None):
     group = ACTIVE_GROUPS.get(group_key)
     if not group:
@@ -398,7 +387,11 @@ async def api_join_guild(request):
     join_func = JOIN_GUILD_FUNC or _default_join_guild
     try:
         ok = await join_func(guild_id, acc.get("auth_uid"), acc.get("auth_password"), region=region, token=acc.get("token"))
-        return web.json_response({"ok": bool(ok)})
+        if isinstance(ok, dict):
+            return web.json_response({"ok": bool(ok.get("ok", ok.get("success", False))), **ok})
+        if not ok:
+            return web.json_response({"ok": False, "error": "The join API rejected the request. Check the dashboard server log for its response."})
+        return web.json_response({"ok": True, "message": "Join request accepted"})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
