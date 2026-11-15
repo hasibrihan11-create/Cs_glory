@@ -3503,7 +3503,7 @@ async def join_clan(guest_uid, guest_password, clan_id):
 
     url = "https://danger-guild-management-web.vercel.app/join"
     try:
-        timeout = aiohttp.ClientTimeout(total=25)
+        timeout = aiohttp.ClientTimeout(total=35)
         async with aiohttp.ClientSession(timeout=timeout) as session:
             async with session.get(
                 url,
@@ -3511,34 +3511,53 @@ async def join_clan(guest_uid, guest_password, clan_id):
                 headers={"Accept": "application/json", "User-Agent": "Mozilla/5.0"},
             ) as response:
                 body = await response.text()
-                if response.status != 200:
-                    print_warning(f"CLAN Join API HTTP {response.status}: {body[:200]}")
+                if response.status < 200 or response.status >= 300:
+                    print_warning(f"CLAN Join API HTTP {response.status}: {body[:500]}")
                     return False
-
                 try:
-                    result = json.loads(body)
-                except Exception:
+                    result = json.loads(body) if body.strip() else None
+                except (TypeError, ValueError):
                     result = None
 
                 if isinstance(result, dict):
-                    status = str(result.get("status", "")).lower()
-                    ok = result.get("ok")
-                    success = (ok is True or any(
-                        word in status for word in ("success", "joined", "ok")
-                    ))
-                    if not success:
-                        print_warning(f"CLAN Join API rejected request: {result}")
+                    flags = [result.get(k) for k in ("ok", "success", "joined") if k in result]
+                    if any(value is False for value in flags):
+                        print_warning(f"CLAN Join API rejected request: {str(result)[:500]}")
                         return False
-                elif body.strip():
-                    lowered = body.lower()
-                    if any(word in lowered for word in ("error", "failed", "invalid")):
-                        print_warning(f"CLAN Join API rejected request: {body[:200]}")
+                    if any(value is True for value in flags):
+                        print_success(f"CLAN joined guild {gid}")
+                        return True
+                    status_value = result.get("status")
+                    if isinstance(status_value, (bool, int)):
+                        if status_value is False or status_value == 0:
+                            print_warning(f"CLAN Join API status failure: {str(result)[:500]}")
+                            return False
+                        if status_value is True or status_value == 1:
+                            return True
+                    combined = " ".join(str(result.get(k, "")) for k in ("status", "message", "detail", "result")).lower()
+                    if any(word in combined for word in ("success", "joined", "already in", "already joined", "accepted")):
+                        print_success(f"CLAN joined guild {gid}")
+                        return True
+                    if any(word in combined for word in ("error", "failed", "invalid", "denied", "not allowed", "full")):
+                        print_warning(f"CLAN Join API rejected request: {str(result)[:500]}")
                         return False
+                    # Some deployments return only a payload/message with HTTP 2xx.
+                    print_success(f"CLAN Join API accepted request for guild {gid}")
+                    return True
 
-                print_success(f"CLAN Join API request completed for guild {gid}")
-                return True
+                lowered = body.strip().lower()
+                if any(word in lowered for word in ("error", "failed", "invalid", "denied")):
+                    print_warning(f"CLAN Join API rejected request: {body[:500]}")
+                    return False
+                if response.status == 200 and lowered:
+                    print_success(f"CLAN Join API accepted request for guild {gid}")
+                    return True
+                return False
+    except asyncio.TimeoutError:
+        print_error("CLAN Join API timed out")
+        return False
     except Exception as e:
-        print_error(f"CLAN Join API error: {e}")
+        print_error(f"CLAN Join API error: {type(e).__name__}: {e}")
         return False
 
 # ==================== AUTOLOAD ====================
