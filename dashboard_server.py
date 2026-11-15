@@ -20,7 +20,7 @@ FETCH_GUILD_INFO = None
 RUN_GROUP_CREATION = None
 JOIN_GUILD_FUNC = None
 
-DEFAULT_PASSWORD = "NGRAXX__"
+DEFAULT_PASSWORD = "RAFIN TxT"
 DEFAULT_COUNT = 4
 
 GUILD_API_BASE = "https://danger-guild-management-web.vercel.app"
@@ -87,7 +87,7 @@ async def _default_fetch_guild_info(guild_id: str, region: str):
     gid = str(guild_id or "").strip()
     if not gid.isdigit():
         return None
-    reg = str(region or "IND").strip().upper()
+    reg = str(region or "BD").strip().upper()
 
     cache_key = f"{gid}:{reg}"
     now = time.time()
@@ -119,75 +119,72 @@ async def _default_fetch_guild_info(guild_id: str, region: str):
         print(f"[DASH] guild fetch failed: {e}")
     return None
 
-async def _default_join_guild(guild_id, guest_uid, guest_password, region="IND", token=None):
-    """Call the guild-management API and interpret its common response formats."""
+async def _default_join_guild(guild_id, guest_uid, guest_password, region="bd", token=None):
     gid = str(guild_id or "").strip()
     gu = str(guest_uid or "").strip()
     gp = str(guest_password or "").strip()
     if not (gid.isdigit() and gu and gp):
-        print("[DASH] join guild skipped: missing guild ID or guest credentials")
         return False
-
-    url = f"{GUILD_API_BASE}/join"
-    params = {"guild_id": gid, "uid": gu, "password": gp}
-    headers = {"accept": "application/json", "user-agent": "Mozilla/5.0"}
     try:
-        timeout = aiohttp.ClientTimeout(total=35)
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            async with session.get(url, params=params, headers=headers) as response:
-                body = await response.text()
-                if response.status < 200 or response.status >= 300:
-                    print(f"[DASH] join API HTTP {response.status}: {body[:500]}")
+        url = f"{GUILD_API_BASE}/join?guild_id={gid}&uid={gu}&password={gp}"
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
+            async with s.get(url) as r:
+                if r.status != 200:
                     return False
-
                 try:
-                    result = json.loads(body) if body.strip() else None
-                except (TypeError, ValueError):
-                    result = None
-
-                if isinstance(result, dict):
-                    # APIs commonly use any of these fields for their result.
-                    flags = [result.get(k) for k in ("ok", "success", "joined") if k in result]
-                    if any(value is False for value in flags):
-                        print(f"[DASH] join API reported failure: {str(result)[:500]}")
-                        return False
-                    if any(value is True for value in flags):
-                        return True
-
-                    status_value = result.get("status")
-                    if isinstance(status_value, (bool, int)):
-                        if status_value is False or status_value == 0:
-                            print(f"[DASH] join API status failure: {str(result)[:500]}")
-                            return False
-                        if status_value is True or status_value == 1:
-                            return True
-                    status = str(status_value or "").strip().lower()
-                    message = " ".join(str(result.get(k, "")) for k in ("message", "detail", "result")).lower()
-                    combined = f"{status} {message}"
-                    if any(word in combined for word in ("success", "joined", "already in", "already joined", "accepted")):
-                        return True
-                    if any(word in combined for word in ("error", "failed", "invalid", "denied", "not allowed", "full")):
-                        print(f"[DASH] join API rejected request: {str(result)[:500]}")
-                        return False
-                    # A 2xx response without an explicit failure is treated as accepted;
-                    # this supports APIs that return only a data/message payload.
+                    data = await r.json()
+                except Exception:
                     return True
-
-                if result is not None:
-                    print(f"[DASH] unexpected join API response: {str(result)[:500]}")
-                    return False
-                lowered = body.strip().lower()
-                if any(word in lowered for word in ("error", "failed", "invalid", "denied")):
-                    print(f"[DASH] join API rejected request: {body[:500]}")
-                    return False
-                return bool(lowered)
-    except asyncio.TimeoutError:
-        print("[DASH] join API timed out")
-        return False
-    except Exception as exc:
-        print(f"[DASH] join API request error: {type(exc).__name__}: {exc}")
+                if isinstance(data, dict):
+                    status = str(data.get("status", "")).lower()
+                    return any(k in status for k in ("success", "joined", "ok"))
+                return True
+    except Exception as e:
+        print(f"[DASH] join guild failed: {e}")
         return False
 
+# ==================== ACCOUNT SNAPSHOT ====================
+def _account_snapshot(auth_uid: str, fallback: dict = None) -> dict:
+    auth_uid = str(auth_uid)
+    acc = None
+    if BOT_STATE:
+        game_id = BOT_STATE.auth_to_game_id.get(auth_uid)
+        if game_id:
+            acc = BOT_STATE.accounts.get(str(game_id))
+    if acc:
+        return {
+            "uid": str(acc.get("uid", auth_uid)),
+            "auth_uid": auth_uid,
+            "nickname": acc.get("nickname", "Generating..."),
+            "level": int(acc.get("level", 1) or 1),
+            "gained_exp": int(acc.get("gained_exp", 0) or 0),
+            "status": acc.get("status", "ONLINE"),
+        }
+    if fallback:
+        return dict(fallback)
+    return {
+        "uid": auth_uid,
+        "auth_uid": auth_uid,
+        "nickname": "Generating...",
+        "level": 1,
+        "gained_exp": 0,
+        "status": "GENERATING",
+    }
+
+def _refresh_group_accounts(group: dict) -> None:
+    auth_uids = group.get("auth_uids", []) or []
+    initial_map = {a["auth_uid"]: a for a in group.get("initial_accounts", [])}
+    accounts = [
+        _account_snapshot(au, fallback=initial_map.get(str(au)))
+        for au in auth_uids
+    ]
+    group["accounts"] = accounts
+
+    if group.get("status") == "GENERATING" and accounts:
+        if any(a.get("status") != "GENERATING" for a in accounts):
+            group["status"] = "RUNNING"
+
+# ==================== DEFAULT GROUP CREATION ====================
 async def _default_run_group_creation(group_key: str, region: str, count: int, guild_id: str = None, password: str = None):
     group = ACTIVE_GROUPS.get(group_key)
     if not group:
@@ -266,7 +263,7 @@ async def _score_updater_loop():
             for g in list(ACTIVE_GROUPS.values()):
                 if g.get("status") in ("RUNNING", "GENERATING", "STOPPED"):
                     try:
-                        info = await FETCH_GUILD_INFO(g["guild_id"], g.get("region", "IND"))
+                        info = await FETCH_GUILD_INFO(g["guild_id"], g.get("region", "BD"))
                         if info:
                             current_score = int(info.get("score", 0) or 0)
                             current_weekly = int(info.get("weekly_activity", 0) or 0)
@@ -342,7 +339,7 @@ async def api_get_groups(request):
 
 async def api_guild_info(request):
     guild_id = str(request.query.get("guild_id", "")).strip()
-    region = str(request.query.get("region", "IND")).strip().upper()
+    region = str(request.query.get("region", "BD")).strip().upper()
     if not guild_id.isdigit():
         return web.json_response({"ok": False, "error": "Guild ID must be numeric"})
     
@@ -374,7 +371,7 @@ async def api_join_guild(request):
         return web.json_response({"ok": False, "error": "Invalid JSON"})
 
     guild_id = str(data.get("guild_id", "")).strip()
-    region = str(data.get("region", "IND")).strip().upper()
+    region = str(data.get("region", "BD")).strip().upper()
     auth_uid = str(data.get("auth_uid", "")).strip()
 
     if not guild_id.isdigit() or not auth_uid:
@@ -387,18 +384,14 @@ async def api_join_guild(request):
     join_func = JOIN_GUILD_FUNC or _default_join_guild
     try:
         ok = await join_func(guild_id, acc.get("auth_uid"), acc.get("auth_password"), region=region, token=acc.get("token"))
-        if isinstance(ok, dict):
-            return web.json_response({"ok": bool(ok.get("ok", ok.get("success", False))), **ok})
-        if not ok:
-            return web.json_response({"ok": False, "error": "The join API rejected the request. Check the dashboard server log for its response."})
-        return web.json_response({"ok": True, "message": "Join request accepted"})
+        return web.json_response({"ok": bool(ok)})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
 async def api_create_team(request):
     try:
         data = await request.json()
-        region = str(data.get("region", "IND")).upper()
+        region = str(data.get("region", "BD")).upper()
         guild_id = str(data.get("guild_id") or data.get("clan_id") or "").strip()
         count = int(data.get("count", DEFAULT_COUNT))
         password = str(data.get("password", DEFAULT_PASSWORD)).strip() or DEFAULT_PASSWORD
@@ -484,7 +477,7 @@ async def api_stop_group(request):
             
         if FETCH_GUILD_INFO:
             try:
-                raw = await FETCH_GUILD_INFO(g["guild_id"], g.get("region", "IND"))
+                raw = await FETCH_GUILD_INFO(g["guild_id"], g.get("region", "BD"))
                 info = await _ensure_normalized(raw)
                 if info:
                     current_score = int(info.get("score", 0) or 0)
@@ -524,7 +517,7 @@ async def api_restart_group(request):
         g["glory_pushed"] = 0
         g.pop("error", None)
 
-        region = g.get("region", "IND")
+        region = g.get("region", "BD")
         guild_id = g.get("guild_id")
 
         runner = RUN_GROUP_CREATION or _default_run_group_creation
