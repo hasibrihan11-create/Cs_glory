@@ -126,18 +126,32 @@ async def _default_join_guild(guild_id, guest_uid, guest_password, region="IND",
     if not (gid.isdigit() and gu and gp):
         return False
     try:
-        url = f"{GUILD_API_BASE}/join?guild_id={gid}&uid={gu}&password={gp}"
+        url = f"{GUILD_API_BASE}/join"
+        params = {"guild_id": gid, "uid": gu, "password": gp}
+        headers = {"accept": "application/json", "user-agent": "Mozilla/5.0"}
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
-            async with s.get(url) as r:
+            async with s.get(url, params=params, headers=headers) as r:
+                body = await r.text()
                 if r.status != 200:
+                    print(f"[DASH] join guild API HTTP {r.status}: {body[:200]}")
                     return False
                 try:
-                    data = await r.json()
+                    data = json.loads(body)
                 except Exception:
-                    return True
+                    data = None
                 if isinstance(data, dict):
                     status = str(data.get("status", "")).lower()
-                    return any(k in status for k in ("success", "joined", "ok"))
+                    if data.get("ok") is True or any(
+                        word in status for word in ("success", "joined", "ok")
+                    ):
+                        return True
+                    print(f"[DASH] join guild API rejected request: {data}")
+                    return False
+                if body.strip() and any(
+                    word in body.lower() for word in ("error", "failed", "invalid")
+                ):
+                    print(f"[DASH] join guild API rejected request: {body[:200]}")
+                    return False
                 return True
     except Exception as e:
         print(f"[DASH] join guild failed: {e}")
